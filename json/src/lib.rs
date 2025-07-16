@@ -1051,8 +1051,8 @@ pub struct GetBlockchainInfoResult {
     /// The target size used by pruning (only present if automatic pruning is enabled)
     pub prune_target_size: Option<u64>,
     /// Status of softforks in progress
-    #[serde(default)]
-    pub softforks: HashMap<String, Softfork>,
+    // #[serde(default)]
+    // pub softforks: HashMap<String, Softfork>,
     /// Any network and blockchain warnings. In later versions of bitcoind, it's an array of strings.
     pub warnings: StringOrStringArray,
 }

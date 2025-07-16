@@ -3,5 +3,5 @@
 members = [
     "json",
     "client",
-    "integration_test",
+    "integration_test", "bitcoin-rpc-test",
 ]
