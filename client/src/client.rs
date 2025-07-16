@@ -22,7 +22,7 @@ use jsonrpc;
 use serde;
 use serde_json;
 
-use crate::bitcoin::address::{NetworkUnchecked, NetworkChecked};
+use crate::bitcoin::address::{NetworkChecked, NetworkUnchecked};
 use crate::bitcoin::hashes::hex::FromHex;
 use crate::bitcoin::secp256k1::ecdsa::Signature;
 use crate::bitcoin::{
@@ -388,12 +388,12 @@ pub trait RpcApi: Sized {
     /// Returns a data structure containing various state info regarding
     /// blockchain processing.
     fn get_blockchain_info(&self) -> Result<json::GetBlockchainInfoResult> {
-        let mut raw: serde_json::Value = self.call("getblockchaininfo", &[])?;
+        let  raw: serde_json::Value = self.call("getblockchaininfo", &[])?;
         // The softfork fields are not backwards compatible:
         // - 0.18.x returns a "softforks" array and a "bip9_softforks" map.
         // - 0.19.x returns a "softforks" map.
         Ok(if self.version()? < 190000 {
-            use crate::Error::UnexpectedStructure as err;
+            //use crate::Error::UnexpectedStructure as err;
 
             // First, remove both incompatible softfork fields.
             // We need to scope the mutable ref here for v1.29 borrowck.
@@ -405,7 +405,7 @@ pub trait RpcApi: Sized {
             //     map.insert("softforks".into(), serde_json::Map::new().into());
             //     (bip9_softforks, old_softforks)
             // };
-            let mut ret: json::GetBlockchainInfoResult = serde_json::from_value(raw)?;
+            let ret: json::GetBlockchainInfoResult = serde_json::from_value(raw)?;
 
             // Then convert both softfork types and add them.
             // for sf in old_softforks.as_array().ok_or(err)?.iter() {
@@ -413,16 +413,16 @@ pub trait RpcApi: Sized {
             //     let id = json.get("id").ok_or(err)?.as_str().ok_or(err)?;
             //     let reject = json.get("reject").ok_or(err)?.as_object().ok_or(err)?;
             //     let active = reject.get("status").ok_or(err)?.as_bool().ok_or(err)?;
-                // ret.softforks.insert(
-                //     id.into(),
-                //     json::Softfork {
-                //         type_: json::SoftforkType::Buried,
-                //         bip9: None,
-                //         height: None,
-                //         active: active,
-                //     },
-                // );
-           // }
+            // ret.softforks.insert(
+            //     id.into(),
+            //     json::Softfork {
+            //         type_: json::SoftforkType::Buried,
+            //         bip9: None,
+            //         height: None,
+            //         active: active,
+            //     },
+            // );
+            // }
             // for (id, sf) in bip9_softforks.as_object().ok_or(err)?.iter() {
             //     #[derive(Deserialize)]
             //     struct OldBip9SoftFork {
@@ -892,7 +892,10 @@ pub trait RpcApi: Sized {
     }
 
     /// Generate new address for receiving change
-    fn get_raw_change_address(&self, address_type: Option<json::AddressType>) -> Result<Address<NetworkUnchecked>> {
+    fn get_raw_change_address(
+        &self,
+        address_type: Option<json::AddressType>,
+    ) -> Result<Address<NetworkUnchecked>> {
         self.call("getrawchangeaddress", &[opt_into_json(address_type)?])
     }
 
@@ -1183,7 +1186,11 @@ pub trait RpcApi: Sized {
         self.call("finalizepsbt", handle_defaults(&mut args, &[true.into()]))
     }
 
-    fn derive_addresses(&self, descriptor: &str, range: Option<[u32; 2]>) -> Result<Vec<Address<NetworkUnchecked>>> {
+    fn derive_addresses(
+        &self,
+        descriptor: &str,
+        range: Option<[u32; 2]>,
+    ) -> Result<Vec<Address<NetworkUnchecked>>> {
         let mut args = [into_json(descriptor)?, opt_into_json(range)?];
         self.call("deriveaddresses", handle_defaults(&mut args, &[null()]))
     }
@@ -1339,7 +1346,8 @@ fn log_response(cmd: &str, resp: &Result<jsonrpc::Response>) {
                         debug!(target: "bitcoincore_rpc", "JSON-RPC error for {}: {:?}", cmd, e);
                     }
                 } else if log_enabled!(Trace) {
-                    let def = serde_json::value::to_raw_value(&serde_json::value::Value::Null).unwrap();
+                    let def =
+                        serde_json::value::to_raw_value(&serde_json::value::Value::Null).unwrap();
                     let result = resp.result.as_ref().unwrap_or(&def);
                     trace!(target: "bitcoincore_rpc", "JSON-RPC response for {}: {}", cmd, result);
                 }
